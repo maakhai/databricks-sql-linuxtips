@@ -66,7 +66,7 @@ where
     year(dtPedido) = '2017'
     and month(dtPedido) = '12'
   )
-  and dtEntregue > dtEstimativaEntrega;
+  and date(dtEntregue) > date(dtEstimativaEntrega);
 
 -- COMMAND ----------
 
@@ -83,7 +83,7 @@ where
 -- 08 Lista de pedidos com 2 ou mais parcelas menores que R$20,00
 select
   *,
-  (vlPagamento / nrPacelas) as vlParcela
+  round(vlPagamento / nrPacelas, 2) as vlParcela
 from
   silver_olist.pagamento_pedido
 where
@@ -110,11 +110,9 @@ select
 select
   *,
   case
-    when vlPreco * 0.10 > vlFrete then '10%'
-    when vlPreco * 0.10 <= vlFrete
-    and vlPreco * 0.25 > vlFrete then '10% a 25%'
-    when vlPreco * 0.25 <= vlFrete
-    and vlPreco * 0.50 > vlFrete then '25% a 50%'
+    when vlfrete / (vlPreco + vlFrete) <= 0.1 then '10%'
+    when vlfrete / (vlPreco + vlFrete) <= 0.25 then '10% a 25%'
+    when vlfrete / (vlPreco + vlFrete) <= 0.5 then '25% a 50%'
     else '50%'
   end as percentualFrete
 from
